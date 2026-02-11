@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيلات الشيكات - تسهيلات</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="nav-header">
+                <a href="index.html" class="back-btn">←</a>
+                <h1>تسجيلات الشيكات</h1>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="form-container">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="add">إضافة شيك</button>
+                    <button class="tab-btn" data-tab="list">قائمة الشيكات</button>
+                </div>
+
+                <!-- تبويب إضافة شيك -->
+                <div id="add-tab" class="tab-content active">
+                    <form id="chequeForm" class="cheque-form">
+                        <div class="form-group">
+                            <label for="chequeNumber">رقم الشيك</label>
+                            <input type="text" id="chequeNumber" name="chequeNumber" placeholder="أدخل رقم الشيك" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bankName">البنك</label>
+                            <select id="bankName" name="bankName" required>
+                                <option value="">اختر البنك</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clientName">اسم العميل/الشخص</label>
+                            <input type="text" id="clientName" name="clientName" placeholder="أدخل اسم العميل" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="amount">المبلغ</label>
+                            <div class="balance-input-group">
+                                <input type="text" id="amount" name="amount" placeholder="0.00" inputmode="decimal" required>
+                                <select id="currency" name="currency" class="currency-select">
+                                    <option value="جنيه" selected>جنيه</option>
+                                    <option value="ريال">ريال</option>
+                                    <option value="دولار">دولار</option>
+                                    <option value="يورو">يورو</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dueDate">تاريخ الاستحقاق</label>
+                            <input type="date" id="dueDate" name="dueDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">ملاحظات (اختياري)</label>
+                            <textarea id="notes" name="notes" placeholder="أي ملاحظات إضافية" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">حفظ الشيك</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- تبويب قائمة الشيكات -->
+                <div id="list-tab" class="tab-content">
+                    <!-- إحصائيات سريعة -->
+                    <div class="statistics-section">
+                        <h3>إحصائيات الشيكات</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalCheques">0</div>
+                                <div class="stat-label">إجمالي الشيكات</div>
+                            </div>
+                            <div class="stat-card pending">
+                                <div class="stat-value" id="pendingCheques">0</div>
+                                <div class="stat-label">شيكات مستحقة</div>
+                            </div>
+                            <div class="stat-card overdue">
+                                <div class="stat-value" id="overdueCheques">0</div>
+                                <div class="stat-label">شيكات متأخرة</div>
+                            </div>
+                            <div class="stat-card cashed">
+                                <div class="stat-value" id="cashedCheques">0</div>
+                                <div class="stat-label">شيكات تم صرفها</div>
+                            </div>
+                        </div>
+                        
+                        <!-- إجمالي المبالغ -->
+                        <div class="totals-section">
+                            <h4>إجمالي المبالغ المستحقة</h4>
+                            <div class="totals-grid" id="totalsGrid">
+                                <!-- سيتم حسابها ديناميكياً -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- الفلاتر والأزرار -->
+                    <div class="filters-section">
+                        <div class="filters">
+                            <div class="filter-group">
+                                <label for="statusFilter">حالة الشيك:</label>
+                                <select id="statusFilter">
+                                    <option value="all">الكل</option>
+                                    <option value="pending">مستحق</option>
+                                    <option value="cashed">تم الصرف</option>
+                                    <option value="overdue">متأخر</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="bankFilter">البنك:</label>
+                                <select id="bankFilter">
+                                    <option value="all">الكل</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" id="printPending" class="btn btn-outline">🖨️ طباعة المستحقة</button>
+                            <button type="button" id="printCashed" class="btn btn-outline">🖨️ طباعة المنصرفة</button>
+                            <button type="button" id="printAll" class="btn btn-outline">🖨️ طباعة الكل</button>
+                        </div>
+                    </div>
+
+                    <div class="cheques-list" id="chequesList">
+                        <!-- سيتم عرض الشيكات هنا -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- نافذة تفاصيل الشيك -->
+    <div id="chequeDetailsModal" class="modal">
+        <div class="modal-content">
+            <h3>تفاصيل الشيك</h3>
+            <div id="chequeDetails">
+                <!-- سيتم عرض التفاصيل هنا -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="cancelCheque" class="btn btn-danger">إلغاء الشيك</button>
+                <button type="button" id="cashCheque" class="btn btn-success">صرف الشيك</button>
+                <button type="button" id="closeDetails" class="btn btn-secondary">إغلاق</button>
+            </div>
+            
+            <!-- حقل تاريخ الصرف اليدوي -->
+            <div id="cashDateSection" style="display: none; margin-top: 20px;">
+                <h4>تاريخ الصرف</h4>
+                <div class="form-group">
+                    <label for="cashDate">اختر تاريخ الصرف:</label>
+                    <input type="date" id="cashDate" name="cashDate">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="confirmCashDate" class="btn btn-success">تأكيد الصرف</button>
+                    <button type="button" id="cancelCashDate" class="btn btn-secondary">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="cheques-management.js"></script>
+</body>
+</html>

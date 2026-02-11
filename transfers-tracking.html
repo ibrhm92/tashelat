@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متابعة التحويلات - تسهيلات</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="nav-header">
+                <a href="index.html" class="back-btn">←</a>
+                <h1>متابعة التحويلات الواردة</h1>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="form-container">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="add">إضافة تحويلة</button>
+                    <button class="tab-btn" data-tab="list">قائمة التحويلات</button>
+                </div>
+
+                <!-- تبويب إضافة تحويلة -->
+                <div id="add-tab" class="tab-content active">
+                    <form id="transferForm" class="transfer-form">
+                        <div class="form-group">
+                            <label for="transferDate">تاريخ التحويلة</label>
+                            <input type="date" id="transferDate" name="transferDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="senderName">اسم المرسل</label>
+                            <input type="text" id="senderName" name="senderName" placeholder="أدخل اسم المرسل" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="senderCountry">بلد المرسل</label>
+                            <select id="senderCountry" name="senderCountry" required>
+                                <option value="">اختر البلد</option>
+                                <option value="الولايات المتحدة">الولايات المتحدة</option>
+                                <option value="بريطانيا">بريطانيا</option>
+                                <option value="كندا">كندا</option>
+                                <option value="أستراليا">أستراليا</option>
+                                <option value="ألمانيا">ألمانيا</option>
+                                <option value="فرنسا">فرنسا</option>
+                                <option value="إيطاليا">إيطاليا</option>
+                                <option value="إسبانيا">إسبانيا</option>
+                                <option value="السعودية">السعودية</option>
+                                <option value="الإمارات">الإمارات</option>
+                                <option value="الكويت">الكويت</option>
+                                <option value="قطر">قطر</option>
+                                <option value="البحرين">البحرين</option>
+                                <option value="عمان">عمان</option>
+                                <option value="الأردن">الأردن</option>
+                                <option value="لبنان">لبنان</option>
+                                <option value="مصر">مصر</option>
+                                <option value="السودان">السودان</option>
+                                <option value="ليبيا">ليبيا</option>
+                                <option value="تونس">تونس</option>
+                                <option value="الجزائر">الجزائر</option>
+                                <option value="المغرب">المغرب</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transferAmount">المبلغ بالدولار</label>
+                            <div class="balance-input-group">
+                                <input type="text" id="transferAmount" name="transferAmount" placeholder="0.00" inputmode="decimal" required>
+                                <span class="currency-symbol">$</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exchangeRate">سعر الصرف</label>
+                            <div class="exchange-rate-group">
+                                <input type="text" id="exchangeRate" name="exchangeRate" placeholder="0.00" inputmode="decimal" required>
+                                <span class="rate-info">1 دولار = ? جنيه</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="localAmount">المبلغ بالجنيه</label>
+                            <div class="balance-input-group">
+                                <input type="text" id="localAmount" name="localAmount" placeholder="0.00" inputmode="decimal" readonly>
+                                <span class="currency-symbol">ج.م</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="recipientName">اسم المستلم</label>
+                            <input type="text" id="recipientName" name="recipientName" placeholder="أدخل اسم المستلم" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transferPurpose">غرض التحويل</label>
+                            <select id="transferPurpose" name="transferPurpose" required>
+                                <option value="">اختر الغرض</option>
+                                <option value="دعم عائلي">دعم عائلي</option>
+                                <option value="تحويلات شخصية">تحويلات شخصية</option>
+                                <option value="تجارة">تجارة</option>
+                                <option value="استثمار">استثمار</option>
+                                <option value="دراسة">دراسة</option>
+                                <option value="علاج">علاج</option>
+                                <option value="سياحة">سياحة</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transferCompany">شركة التحويل</label>
+                            <select id="transferCompany" name="transferCompany" required>
+                                <option value="">اختر الشركة</option>
+                                <option value="Western Union">Western Union</option>
+                                <option value="MoneyGram">MoneyGram</option>
+                                <option value="RIA">RIA</option>
+                                <option value="Wise">Wise</option>
+                                <option value="PayPal">PayPal</option>
+                                <option value="بنك محلي">بنك محلي</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="referenceNumber">رقم المرجع</label>
+                            <input type="text" id="referenceNumber" name="referenceNumber" placeholder="رقم التحويل أو المرجع">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">ملاحظات (اختياري)</label>
+                            <textarea id="notes" name="notes" placeholder="أي ملاحظات إضافية" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">حفظ التحويلة</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- تبويب قائمة التحويلات -->
+                <div id="list-tab" class="tab-content">
+                    <!-- إحصائيات سريعة -->
+                    <div class="statistics-section">
+                        <h3>إحصائيات التحويلات</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalTransfers">0</div>
+                                <div class="stat-label">إجمالي التحويلات</div>
+                            </div>
+                            <div class="stat-card dollar">
+                                <div class="stat-value" id="totalDollars">$0</div>
+                                <div class="stat-label">إجمالي الدولار</div>
+                            </div>
+                            <div class="stat-card local">
+                                <div class="stat-value" id="totalLocal">0 ج.م</div>
+                                <div class="stat-label">إجمالي الجنيه</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="thisMonth">0</div>
+                                <div class="stat-label">تحويلات هذا الشهر</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- الفلاتر والأزرار -->
+                    <div class="filters-section">
+                        <div class="filters">
+                            <div class="filter-group">
+                                <label for="monthFilter">الشهر:</label>
+                                <select id="monthFilter">
+                                    <option value="all">كل الأشهر</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="countryFilter">بلد المرسل:</label>
+                                <select id="countryFilter">
+                                    <option value="all">كل البلدان</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" id="printTransfers" class="btn btn-outline">🖨️ طباعة التحويلات</button>
+                            <button type="button" id="exportData" class="btn btn-outline">📥 تصدير البيانات</button>
+                        </div>
+                    </div>
+
+                    <div class="transfers-list" id="transfersList">
+                        <!-- سيتم عرض التحويلات هنا -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- نافذة تفاصيل التحويلة -->
+    <div id="transferDetailsModal" class="modal">
+        <div class="modal-content">
+            <h3>تفاصيل التحويلة</h3>
+            <div id="transferDetails">
+                <!-- سيتم عرض التفاصيل هنا -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="deleteTransfer" class="btn btn-danger">حذف التحويلة</button>
+                <button type="button" id="closeTransferDetails" class="btn btn-secondary">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="transfers-tracking.js"></script>
+</body>
+</html>
