@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>وارد ومنصرف البنوك - تسهيلات</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="nav-header">
+                <a href="index.html" class="back-btn">←</a>
+                <h1>وارد ومنصرف البنوك</h1>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="form-container">
+                <div class="transaction-type-selector">
+                    <label>نوع العملية:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="transactionType" value="وارد" checked>
+                            <span class="radio-text">وارد</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="transactionType" value="منصرف">
+                            <span class="radio-text">منصرف</span>
+                        </label>
+                    </div>
+                </div>
+
+                <form id="transactionForm" class="transaction-form">
+                    <div class="form-group">
+                        <label for="bank">البنك</label>
+                        <select id="bank" name="bank" class="bank-select" required>
+                            <option value="">اختر البنك</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clientName">اسم العميل</label>
+                        <input type="text" id="clientName" name="clientName" placeholder="أدخل اسم العميل" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">المبلغ</label>
+                        <div class="balance-input-group">
+                            <input type="text" id="amount" name="amount" placeholder="0.00" inputmode="decimal" required>
+                            <select id="currency" name="currency" class="currency-select">
+                                <option value="جنيه" selected>جنيه</option>
+                                <option value="ريال">ريال</option>
+                                <option value="دولار">دولار</option>
+                                <option value="يورو">يورو</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group optional-group">
+                        <label for="originalAmount">أصل المبلغ <span class="optional-text">(اختياري)</span></label>
+                        <div class="balance-input-group">
+                            <input type="text" id="originalAmount" name="originalAmount" placeholder="0.00" inputmode="decimal">
+                            <select id="originalCurrency" name="originalCurrency" class="currency-select">
+                                <option value="جنيه" selected>جنيه</option>
+                                <option value="ريال">ريال</option>
+                                <option value="دولار">دولار</option>
+                                <option value="يورو">يورو</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">إرسال للواتساب</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="bank-transactions.js"></script>
+</body>
+</html>
