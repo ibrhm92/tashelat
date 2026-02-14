@@ -4,15 +4,31 @@
     box-sizing: border-box;
 }
 
+:root {
+    --bg-start: #0f172a;
+    --bg-end: #1e293b;
+    --surface: #ffffff;
+    --surface-soft: #f8fafc;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --accent-start: #14b8a6;
+    --accent-end: #0ea5e9;
+    --accent-strong: #0284c7;
+    --border: #dbe3ef;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --warning: #d97706;
+}
+
 body {
     font-family: 'Tajawal', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: radial-gradient(circle at top, #1e293b 0%, #0f172a 45%, #020617 100%);
     min-height: 100vh;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .container {
-    max-width: 480px;
+    max-width: 560px;
     margin: 0 auto;
     padding: 20px;
     min-height: 100vh;
@@ -23,14 +39,14 @@ body {
 .header {
     text-align: center;
     margin-bottom: 40px;
-    color: white;
+    color: #f8fafc;
 }
 
 .header h1 {
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 10px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    text-shadow: 0 10px 30px rgba(15, 23, 42, 0.6);
 }
 
 .header p {
@@ -59,23 +75,23 @@ body {
     justify-content: center;
     padding: 25px 20px;
     border: none;
-    border-radius: 15px;
+    border-radius: 18px;
     text-decoration: none;
     font-family: inherit;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.25s ease;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
     min-height: 120px;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
     color: white;
 }
 
 .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+    box-shadow: 0 12px 24px rgba(14, 165, 233, 0.35);
 }
 
 .btn-secondary {
@@ -132,10 +148,11 @@ body {
 }
 
 .form-container {
-    background: white;
-    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 28px;
     padding: 25px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    box-shadow: 0 20px 45px rgba(2, 6, 23, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     width: 100%;
     margin-top: 20px;
 }
@@ -162,7 +179,7 @@ body {
 }
 
 .saved-bank-item {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
     color: white;
     padding: 6px 12px;
     border-radius: 15px;
@@ -194,8 +211,8 @@ body {
 
 .btn-outline {
     background: transparent;
-    border: 2px solid #667eea;
-    color: #667eea;
+    border: 2px solid var(--accent-strong);
+    color: var(--accent-strong);
     padding: 8px 16px;
     border-radius: 8px;
     cursor: pointer;
@@ -205,7 +222,7 @@ body {
 }
 
 .btn-outline:hover {
-    background: #667eea;
+    background: var(--accent-strong);
     color: white;
     transform: translateY(-1px);
 }
@@ -215,12 +232,12 @@ body {
 }
 
 .bank-item {
-    background: #f8f9fa;
+    background: var(--surface-soft);
     padding: 18px;
     border-radius: 15px;
     margin-bottom: 15px;
     position: relative;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--border);
     transition: box-shadow 0.3s ease;
 }
 
@@ -243,7 +260,7 @@ body {
 .bank-select, .currency-select {
     width: 100%;
     padding: 10px 12px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border);
     border-radius: 10px;
     font-size: 0.95rem;
     background: white;
@@ -253,7 +270,7 @@ body {
 
 .bank-select:focus, .currency-select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--accent-end);
 }
 
 .balance-input-group {
@@ -265,7 +282,7 @@ body {
 .balance-input-group input {
     flex: 1;
     padding: 20px 18px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border);
     border-radius: 10px;
     font-size: 1.3rem;
     font-family: 'Tajawal', monospace;
@@ -276,7 +293,7 @@ body {
 
 .balance-input-group input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--accent-end);
 }
 
 .balance-input-group select {
@@ -301,13 +318,13 @@ body {
 }
 
 .btn-secondary {
-    background: #6c757d;
+    background: #475569;
     color: white;
     border: none;
 }
 
 .btn-secondary:hover {
-    background: #5a6268;
+    background: #334155;
     transform: translateY(-1px);
 }
 
@@ -315,7 +332,7 @@ body {
     position: absolute;
     top: 8px;
     left: 8px;
-    background: #dc3545;
+    background: var(--danger);
     color: white;
     border: none;
     border-radius: 6px;
@@ -327,7 +344,7 @@ body {
 }
 
 .remove-field-btn:hover {
-    background: #c82333;
+    background: #b91c1c;
 }
 
 /* المودال */
@@ -507,7 +524,7 @@ body {
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
@@ -655,7 +672,7 @@ body {
 }
 
 .status-badge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
     color: white;
     padding: 4px 12px;
     border-radius: 15px;
@@ -808,7 +825,7 @@ body {
 }
 
 .total-item {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
     color: white;
     padding: 15px 20px;
     border-radius: 10px;
@@ -929,7 +946,7 @@ body {
 }
 
 .currency-symbol {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
     color: white;
     padding: 15px 12px;
     border-radius: 10px;
@@ -976,7 +993,7 @@ body {
 }
 
 .date-badge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
     color: white;
     padding: 4px 12px;
     border-radius: 15px;
