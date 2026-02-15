@@ -562,10 +562,18 @@ class ChequesManagementApp {
         window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
     }
 
+    // دالة مساعدة للحصول على التاريخ بتنسيق نصي YYYY-MM-DD
+    getDateString(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     // إرسال الشيكات المفلترة عبر واتساب
     sendWhatsAppFiltered(type) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayStr = this.getDateString(new Date());
 
         let filteredCheques = [];
         let title = "";
@@ -574,20 +582,16 @@ class ChequesManagementApp {
             title = "المتأخر واستحقاق اليوم";
             filteredCheques = this.cheques.filter(c => {
                 if (c.status !== 'pending') return false;
-                // تحويل تاريخ الاستحقاق إلى كائن تاريخ مع تصفير الوقت للمقارنة الدقيقة
-                const dueDate = new Date(c.dueDate);
-                const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
-                const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                return dueDateOnly <= todayOnly;
+                const dueDateStr = this.getDateString(c.dueDate);
+                // مقارنة النصوص تعمل بشكل مثالي لتنسيق YYYY-MM-DD
+                return dueDateStr <= todayStr;
             });
         } else if (type === 'from_today') {
             title = "المستحق من اليوم فصاعداً";
             filteredCheques = this.cheques.filter(c => {
                 if (c.status !== 'pending') return false;
-                const dueDate = new Date(c.dueDate);
-                const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
-                const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                return dueDateOnly >= todayOnly;
+                const dueDateStr = this.getDateString(c.dueDate);
+                return dueDateStr >= todayStr;
             });
         }
 
