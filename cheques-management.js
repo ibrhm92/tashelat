@@ -68,6 +68,8 @@ class ChequesManagementApp {
         document.getElementById('printPending').addEventListener('click', () => this.printCheques('pending'));
         document.getElementById('printCashed').addEventListener('click', () => this.printCheques('cashed'));
         document.getElementById('printAll').addEventListener('click', () => this.printCheques('all'));
+        document.getElementById('sendWhatsApp').addEventListener('click', () => this.sendWhatsAppSingle());
+        document.getElementById('sendWhatsAppAll').addEventListener('click', () => this.sendWhatsAppAllPending());
     }
 
     updateBankSelects() {
@@ -519,6 +521,74 @@ class ChequesManagementApp {
         printWindow.document.write(html);
         printWindow.document.close();
         printWindow.print();
+    }
+
+    // دالة حساب أيام التأخير
+    calculateOverdueDays(dueDate) {
+        const today = new Date();
+        const due = new Date(dueDate);
+        if (due >= today) return 0;
+        
+        const diffTime = Math.abs(today - due);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    }
+
+    // إرسال تفاصيل شيك واحد عبر واتساب
+    sendWhatsAppSingle() {
+        const chequeId = this.getCurrentChequeId();
+        if (!chequeId) return;
+
+        const cheque = this.cheques.find(c => c.id === chequeId);
+        if (!cheque) return;
+
+        const overdueDays = this.calculateOverdueDays(cheque.dueDate);
+        const status = this.getChequeStatus(cheque);
+
+        let message = `*تفاصيل الشيك المستحق*\n\n`;
+        message += `*اسم الشركة/العميل:* ${cheque.clientName}\n`;
+        message += `*رقم الشيك:* ${cheque.chequeNumber}\n`;
+        message += `*البنك:* ${cheque.bankName}\n`;
+        message += `*قيمة الشيك:* ${this.formatNumber(cheque.amount)} ${cheque.currency}\n`;
+        message += `*تاريخ الاستحقاق:* ${new Date(cheque.dueDate).toLocaleDateString('ar-SA')}\n`;
+        message += `*الحالة:* ${status}\n`;
+        
+        if (overdueDays > 0) {
+            message += `*أيام التأخير:* ${overdueDays} يوم\n`;
+        }
+
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+    }
+
+    // إرسال جميع الشيكات المستحقة عبر واتساب
+    sendWhatsAppAllPending() {
+        const pendingCheques = this.cheques.filter(c => {
+            const status = this.getChequeStatus(c);
+            return status === 'مستحق' || status === 'متأخر';
+        });
+
+        if (pendingCheques.length === 0) {
+            alert('لا توجد شيكات مستحقة لإرسالها');
+            return;
+        }
+
+        let message = `*قائمة الشيكات المستحقة والمتأخرة*\n`;
+        message += `*تاريخ التقرير:* ${new Date().toLocaleDateString('ar-SA')}\n\n`;
+
+        pendingCheques.forEach((cheque, index) => {
+            const overdueDays = this.calculateOverdueDays(cheque.dueDate);
+            message += `${index + 1}. *${cheque.clientName}*\n`;
+            message += `   - القيمة: ${this.formatNumber(cheque.amount)} ${cheque.currency}\n`;
+            message += `   - الاستحقاق: ${new Date(cheque.dueDate).toLocaleDateString('ar-SA')}\n`;
+            if (overdueDays > 0) {
+                message += `   - التأخير: ${overdueDays} يوم\n`;
+            }
+            message += `-------------------\n`;
+        });
+
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
     }
 }
 
