@@ -574,17 +574,20 @@ class ChequesManagementApp {
             title = "المتأخر واستحقاق اليوم";
             filteredCheques = this.cheques.filter(c => {
                 if (c.status !== 'pending') return false;
+                // تحويل تاريخ الاستحقاق إلى كائن تاريخ مع تصفير الوقت للمقارنة الدقيقة
                 const dueDate = new Date(c.dueDate);
-                dueDate.setHours(0, 0, 0, 0);
-                return dueDate <= today;
+                const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+                const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                return dueDateOnly <= todayOnly;
             });
         } else if (type === 'from_today') {
             title = "المستحق من اليوم فصاعداً";
             filteredCheques = this.cheques.filter(c => {
                 if (c.status !== 'pending') return false;
                 const dueDate = new Date(c.dueDate);
-                dueDate.setHours(0, 0, 0, 0);
-                return dueDate >= today;
+                const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+                const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                return dueDateOnly >= todayOnly;
             });
         }
 
