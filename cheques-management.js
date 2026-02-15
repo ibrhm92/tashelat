@@ -69,7 +69,8 @@ class ChequesManagementApp {
         document.getElementById('printCashed').addEventListener('click', () => this.printCheques('cashed'));
         document.getElementById('printAll').addEventListener('click', () => this.printCheques('all'));
         document.getElementById('sendWhatsApp').addEventListener('click', () => this.sendWhatsAppSingle());
-        document.getElementById('sendWhatsAppAll').addEventListener('click', () => this.sendWhatsAppAllPending());
+        document.getElementById('sendWhatsAppOverdueToday').addEventListener('click', () => this.sendWhatsAppFiltered('overdue_today'));
+        document.getElementById('sendWhatsAppFromToday').addEventListener('click', () => this.sendWhatsAppFiltered('from_today'));
     }
 
     updateBankSelects() {
@@ -561,22 +562,44 @@ class ChequesManagementApp {
         window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
     }
 
-    // إرسال جميع الشيكات المستحقة عبر واتساب
-    sendWhatsAppAllPending() {
-        const pendingCheques = this.cheques.filter(c => {
-            const status = this.getChequeStatus(c);
-            return status === 'مستحق' || status === 'متأخر';
-        });
+    // إرسال الشيكات المفلترة عبر واتساب
+    sendWhatsAppFiltered(type) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-        if (pendingCheques.length === 0) {
-            alert('لا توجد شيكات مستحقة لإرسالها');
+        let filteredCheques = [];
+        let title = "";
+
+        if (type === 'overdue_today') {
+            title = "المتأخر واستحقاق اليوم";
+            filteredCheques = this.cheques.filter(c => {
+                if (c.status !== 'pending') return false;
+                const dueDate = new Date(c.dueDate);
+                dueDate.setHours(0, 0, 0, 0);
+                return dueDate <= today;
+            });
+        } else if (type === 'from_today') {
+            title = "المستحق من اليوم فصاعداً";
+            filteredCheques = this.cheques.filter(c => {
+                if (c.status !== 'pending') return false;
+                const dueDate = new Date(c.dueDate);
+                dueDate.setHours(0, 0, 0, 0);
+                return dueDate >= today;
+            });
+        }
+
+        if (filteredCheques.length === 0) {
+            alert(`لا توجد شيكات في قائمة (${title})`);
             return;
         }
 
-        let message = `*قائمة الشيكات المستحقة والمتأخرة*\n`;
+        // ترتيب حسب تاريخ الاستحقاق
+        filteredCheques.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+        let message = `*تقرير الشيكات: ${title}*\n`;
         message += `*تاريخ التقرير:* ${new Date().toLocaleDateString('ar-SA')}\n\n`;
 
-        pendingCheques.forEach((cheque, index) => {
+        filteredCheques.forEach((cheque, index) => {
             const overdueDays = this.calculateOverdueDays(cheque.dueDate);
             message += `${index + 1}. *${cheque.clientName}*\n`;
             message += `   - القيمة: ${this.formatNumber(cheque.amount)} ${cheque.currency}\n`;
