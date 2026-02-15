@@ -70,6 +70,7 @@ class ChequesManagementApp {
         document.getElementById('printAll').addEventListener('click', () => this.printCheques('all'));
         document.getElementById('sendWhatsApp').addEventListener('click', () => this.sendWhatsAppSingle());
         document.getElementById('sendWhatsAppOverdueToday').addEventListener('click', () => this.sendWhatsAppFiltered('overdue_today'));
+        document.getElementById('sendWhatsAppTodayOnly').addEventListener('click', () => this.sendWhatsAppFiltered('today_only'));
         document.getElementById('sendWhatsAppFromToday').addEventListener('click', () => this.sendWhatsAppFiltered('from_today'));
     }
 
@@ -585,6 +586,13 @@ class ChequesManagementApp {
                 const dueDateStr = this.getDateString(c.dueDate);
                 // مقارنة النصوص تعمل بشكل مثالي لتنسيق YYYY-MM-DD
                 return dueDateStr <= todayStr;
+            });
+        } else if (type === 'today_only') {
+            title = "استحقاق اليوم فقط";
+            filteredCheques = this.cheques.filter(c => {
+                if (c.status !== 'pending') return false;
+                const dueDateStr = this.getDateString(c.dueDate);
+                return dueDateStr === todayStr;
             });
         } else if (type === 'from_today') {
             title = "المستحق من اليوم فصاعداً";
