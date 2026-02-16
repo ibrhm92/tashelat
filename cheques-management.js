@@ -58,9 +58,48 @@ class ChequesManagementApp {
         document.getElementById('confirmCashDate').addEventListener('click', () => this.cashChequeWithDate());
         document.getElementById('cancelCashDate').addEventListener('click', () => this.hideCashDateSection());
         document.getElementById('cancelCheque').addEventListener('click', () => this.cancelCheque());
+        
+        // الأزرار الجديدة
+        document.getElementById('editCheque').addEventListener('click', () => this.openEditModal());
+        document.getElementById('deleteCheque').addEventListener('click', () => this.deleteCheque());
+        document.getElementById('toggleChequeStatus').addEventListener('click', () => this.toggleChequeStatus());
+        document.getElementById('editOriginalCollected').addEventListener('click', () => this.openEditOriginalCollectedModal());
+        
+        // مودال التعديل
+        document.getElementById('editChequeForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.updateCheque();
+        });
+        document.getElementById('cancelEdit').addEventListener('click', () => this.closeEditModal());
+        
+        // مودال تعديل جلب الأصل
+        document.getElementById('editOriginalCollectedForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.updateOriginalCollected();
+        });
+        document.getElementById('cancelEditOriginalCollected').addEventListener('click', () => this.closeEditOriginalCollectedModal());
+        
+        // تغيير طريقة الصرف
+        document.getElementById('cashMethod').addEventListener('change', (e) => {
+            const originalGroup = document.getElementById('originalCollectedGroup');
+            originalGroup.style.display = e.target.value === 'تحويل' ? 'block' : 'none';
+        });
+        
         document.getElementById('chequeDetailsModal').addEventListener('click', (e) => {
             if (e.target.id === 'chequeDetailsModal') {
                 this.closeModal();
+            }
+        });
+        
+        document.getElementById('editChequeModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editChequeModal') {
+                this.closeEditModal();
+            }
+        });
+        
+        document.getElementById('editOriginalCollectedModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editOriginalCollectedModal') {
+                this.closeEditOriginalCollectedModal();
             }
         });
 
@@ -68,18 +107,29 @@ class ChequesManagementApp {
         document.getElementById('printPending').addEventListener('click', () => this.printCheques('pending'));
         document.getElementById('printCashed').addEventListener('click', () => this.printCheques('cashed'));
         document.getElementById('printAll').addEventListener('click', () => this.printCheques('all'));
+        document.getElementById('printOriginalNotCollected').addEventListener('click', () => this.printOriginalNotCollected());
+        document.getElementById('printOriginalNotCollectedFiltered').addEventListener('click', () => this.openPrintFilterModal());
         document.getElementById('sendWhatsApp').addEventListener('click', () => this.sendWhatsAppSingle());
         document.getElementById('sendWhatsAppOverdueToday').addEventListener('click', () => this.sendWhatsAppFiltered('overdue_today'));
         document.getElementById('sendWhatsAppTodayOnly').addEventListener('click', () => this.sendWhatsAppFiltered('today_only'));
         document.getElementById('sendWhatsAppFromToday').addEventListener('click', () => this.sendWhatsAppFiltered('from_today'));
+        
+        // مودال فلتر الطباعة
+        document.getElementById('printFilterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.printOriginalNotCollectedFiltered();
+        });
+        document.getElementById('cancelPrintFilter').addEventListener('click', () => this.closePrintFilterModal());
     }
 
     updateBankSelects() {
-        const selects = [document.getElementById('bankName'), document.getElementById('bankFilter')];
+        const selects = [document.getElementById('bankName'), document.getElementById('bankFilter'), document.getElementById('editBankName'), document.getElementById('filterBankName')];
         
         selects.forEach(select => {
+            if (!select) return;
+            
             const currentValue = select.value;
-            select.innerHTML = select.id === 'bankFilter' ? 
+            select.innerHTML = select.id === 'bankFilter' || select.id === 'filterBankName' ? 
                 '<option value="all">الكل</option>' : 
                 '<option value="">اختر البنك</option>';
             
@@ -96,9 +146,14 @@ class ChequesManagementApp {
     }
 
     setupNumberFormatting() {
-        const amountInput = document.getElementById('amount');
-        amountInput.addEventListener('input', (e) => this.formatNumberInput(e));
-        amountInput.addEventListener('blur', (e) => this.formatNumberInput(e));
+        const amountInputs = ['amount', 'editAmount'];
+        amountInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('input', (e) => this.formatNumberInput(e));
+                input.addEventListener('blur', (e) => this.formatNumberInput(e));
+            }
+        });
     }
 
     formatNumberInput(event) {
@@ -305,22 +360,54 @@ class ChequesManagementApp {
                 <div class="detail-row">
                     <strong>تاريخ الصرف:</strong> ${new Date(cheque.cashedAt).toLocaleDateString('ar-SA')}
                 </div>
+                <div class="detail-row">
+                    <strong>طريقة الصرف:</strong> ${cheque.cashMethod || 'غير محدد'}
+                </div>
+                ${cheque.originalCollected ? `
+                    <div class="detail-row">
+                        <strong>جلب الأصل:</strong> ${cheque.originalCollected}
+                    </div>
+                ` : ''}
+            ` : ''}
+            ${cheque.updatedAt ? `
+                <div class="detail-row">
+                    <strong>آخر تحديث:</strong> ${new Date(cheque.updatedAt).toLocaleDateString('ar-SA')}
+                </div>
             ` : ''}
         `;
 
         // تحديث أزرار الإجراءات
         const cashBtn = document.getElementById('cashCheque');
         const cancelBtn = document.getElementById('cancelCheque');
+        const toggleBtn = document.getElementById('toggleChequeStatus');
+        const editOriginalBtn = document.getElementById('editOriginalCollected');
         
-        if (cheque.status === 'cashed' || cheque.status === 'cancelled') {
+        if (cheque.status === 'cashed') {
             cashBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
+            toggleBtn.style.display = 'none';
+            // إظهار زر تعديل جلب الأصل فقط للشيكات المحولة
+            if (cheque.cashMethod === 'تحويل') {
+                editOriginalBtn.style.display = 'inline-block';
+            } else {
+                editOriginalBtn.style.display = 'none';
+            }
+        } else if (cheque.status === 'cancelled') {
+            cashBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            toggleBtn.style.display = 'inline-block';
+            toggleBtn.textContent = 'تفعيل الشيك';
+            editOriginalBtn.style.display = 'none';
         } else {
             cashBtn.style.display = 'inline-block';
             cancelBtn.style.display = 'inline-block';
+            toggleBtn.style.display = 'inline-block';
+            toggleBtn.textContent = 'إلغاء تفعيل';
+            editOriginalBtn.style.display = 'none';
         }
-
-        document.getElementById('chequeDetailsModal').style.display = 'flex';
+        
+        document.getElementById('chequeDetailsModal').dataset.chequeId = chequeId;
+        document.getElementById('chequeDetailsModal').style.display = 'block';
     }
 
     closeModal() {
@@ -386,11 +473,36 @@ class ChequesManagementApp {
             return dueDate < today;
         }).length;
         const cashed = this.cheques.filter(c => c.status === 'cashed').length;
+        const cancelled = this.cheques.filter(c => c.status === 'cancelled').length;
+        
+        // إحصائيات جلب الأصل للشيكات المحولة فقط
+        const transferredCheques = this.cheques.filter(c => c.status === 'cashed' && c.cashMethod === 'تحويل');
+        const originalCollected = transferredCheques.filter(c => c.originalCollected === 'نعم').length;
+        const originalNotCollected = transferredCheques.filter(c => c.originalCollected === 'لا').length;
 
         document.getElementById('totalCheques').textContent = total;
         document.getElementById('pendingCheques').textContent = pending;
         document.getElementById('overdueCheques').textContent = overdue;
         document.getElementById('cashedCheques').textContent = cashed;
+        document.getElementById('originalCollectedCheques').textContent = originalCollected;
+        document.getElementById('originalNotCollectedCheques').textContent = originalNotCollected;
+        
+        // إضافة إحصائية الشيكات الملغية إذا لم تكن موجودة
+        let cancelledStatCard = document.querySelector('.stat-card.cancelled');
+        if (!cancelledStatCard && cancelled > 0) {
+            const statsGrid = document.querySelector('.stats-grid');
+            const newCard = document.createElement('div');
+            newCard.className = 'stat-card cancelled';
+            newCard.innerHTML = `
+                <div class="stat-value">${cancelled}</div>
+                <div class="stat-label">شيكات ملغية</div>
+            `;
+            statsGrid.appendChild(newCard);
+        } else if (cancelledStatCard && cancelled === 0) {
+            cancelledStatCard.remove();
+        } else if (cancelledStatCard) {
+            cancelledStatCard.querySelector('.stat-value').textContent = cancelled;
+        }
     }
 
     updateTotals() {
@@ -627,6 +739,323 @@ class ChequesManagementApp {
 
         const encodedMessage = encodeURIComponent(message);
         window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+    }
+
+    // الدوال الجديدة للتعديل والحذف
+    openEditModal() {
+        const chequeId = document.getElementById('chequeDetailsModal').dataset.chequeId;
+        const cheque = this.cheques.find(c => c.id == chequeId);
+        
+        if (!cheque) return;
+        
+        // ملء نموذج التعديل
+        document.getElementById('editChequeId').value = cheque.id;
+        document.getElementById('editChequeNumber').value = cheque.chequeNumber;
+        document.getElementById('editBankName').value = cheque.bankName;
+        document.getElementById('editClientName').value = cheque.clientName;
+        document.getElementById('editAmount').value = this.formatNumber(cheque.amount);
+        document.getElementById('editCurrency').value = cheque.currency;
+        document.getElementById('editDueDate').value = cheque.dueDate;
+        document.getElementById('editNotes').value = cheque.notes || '';
+        
+        // إغلاق المودال الحالي وفتح مودال التعديل
+        this.closeModal();
+        document.getElementById('editChequeModal').style.display = 'block';
+    }
+
+    closeEditModal() {
+        document.getElementById('editChequeModal').style.display = 'none';
+    }
+
+    updateCheque() {
+        const chequeId = parseInt(document.getElementById('editChequeId').value);
+        const chequeIndex = this.cheques.findIndex(c => c.id === chequeId);
+        
+        if (chequeIndex === -1) return;
+        
+        const formData = new FormData(document.getElementById('editChequeForm'));
+        
+        this.cheques[chequeIndex] = {
+            ...this.cheques[chequeIndex],
+            chequeNumber: formData.get('chequeNumber'),
+            bankName: formData.get('bankName'),
+            clientName: formData.get('clientName'),
+            amount: this.parseNumber(formData.get('amount')),
+            currency: formData.get('currency'),
+            dueDate: formData.get('dueDate'),
+            notes: formData.get('notes'),
+            updatedAt: new Date().toISOString()
+        };
+        
+        this.saveCheques();
+        this.closeEditModal();
+        this.renderChequesList();
+        this.updateStatistics();
+        this.updateTotals();
+        
+        alert('تم تحديث الشيك بنجاح!');
+    }
+
+    deleteCheque() {
+        const chequeId = document.getElementById('chequeDetailsModal').dataset.chequeId;
+        
+        if (!confirm('هل أنت متأكد من حذف هذا الشيك؟ لا يمكن التراجع عن هذا الإجراء.')) {
+            return;
+        }
+        
+        this.cheques = this.cheques.filter(c => c.id != chequeId);
+        this.saveCheques();
+        this.closeModal();
+        this.renderChequesList();
+        this.updateStatistics();
+        this.updateTotals();
+        
+        alert('تم حذف الشيك بنجاح!');
+    }
+
+    toggleChequeStatus() {
+        const chequeId = document.getElementById('chequeDetailsModal').dataset.chequeId;
+        const cheque = this.cheques.find(c => c.id == chequeId);
+        
+        if (!cheque) return;
+        
+        if (cheque.status === 'cancelled') {
+            cheque.status = 'pending';
+            alert('تم تفعيل الشيك بنجاح!');
+        } else if (cheque.status === 'pending') {
+            cheque.status = 'cancelled';
+            alert('تم إلغاء تفعيل الشيك بنجاح!');
+        } else {
+            alert('لا يمكن تغيير حالة الشيكات التي تم صرفها!');
+            return;
+        }
+        
+        cheque.updatedAt = new Date().toISOString();
+        this.saveCheques();
+        this.closeModal();
+        this.renderChequesList();
+        this.updateStatistics();
+        this.updateTotals();
+    }
+
+    cashChequeWithDate() {
+        const chequeId = document.getElementById('chequeDetailsModal').dataset.chequeId;
+        const cheque = this.cheques.find(c => c.id == chequeId);
+        const cashDate = document.getElementById('cashDate').value;
+        const cashMethod = document.getElementById('cashMethod').value;
+        const originalCollected = cashMethod === 'تحويل' ? document.getElementById('originalCollected').value : null;
+        
+        if (!cheque || !cashDate) return;
+        
+        cheque.status = 'cashed';
+        cheque.cashedAt = cashDate;
+        cheque.cashMethod = cashMethod;
+        cheque.originalCollected = originalCollected;
+        cheque.updatedAt = new Date().toISOString();
+        
+        this.saveCheques();
+        this.hideCashDateSection();
+        this.closeModal();
+        this.renderChequesList();
+        this.updateStatistics();
+        this.updateTotals();
+        
+        alert('تم صرف الشيك بنجاح!');
+    }
+
+    // الدوال الجديدة لتعديل جلب الأصل
+    openEditOriginalCollectedModal() {
+        const chequeId = document.getElementById('chequeDetailsModal').dataset.chequeId;
+        const cheque = this.cheques.find(c => c.id == chequeId);
+        
+        if (!cheque) return;
+        
+        // ملء نموذج التعديل
+        document.getElementById('editOriginalCollectedChequeId').value = cheque.id;
+        document.getElementById('newOriginalCollected').value = cheque.originalCollected || '';
+        
+        // إغلاق المودال الحالي وفتح مودال التعديل
+        this.closeModal();
+        document.getElementById('editOriginalCollectedModal').style.display = 'block';
+    }
+
+    closeEditOriginalCollectedModal() {
+        document.getElementById('editOriginalCollectedModal').style.display = 'none';
+    }
+
+    updateOriginalCollected() {
+        const chequeId = parseInt(document.getElementById('editOriginalCollectedChequeId').value);
+        const newStatus = document.getElementById('newOriginalCollected').value;
+        const cheque = this.cheques.find(c => c.id === chequeId);
+        
+        if (!cheque || !newStatus) return;
+        
+        cheque.originalCollected = newStatus;
+        cheque.updatedAt = new Date().toISOString();
+        
+        this.saveCheques();
+        this.closeEditOriginalCollectedModal();
+        this.renderChequesList();
+        this.updateStatistics();
+        this.updateTotals();
+        
+        alert('تم تحديث حالة جلب الأصل بنجاح!');
+    }
+
+    // الدوال الجديدة للطباعة والفلترة
+    printOriginalNotCollected() {
+        const notCollectedCheques = this.cheques.filter(c => 
+            c.status === 'cashed' && 
+            c.cashMethod === 'تحويل' && 
+            c.originalCollected === 'لا'
+        );
+        
+        if (notCollectedCheques.length === 0) {
+            alert('لا توجد شيكات لم يتم جلب أصلها!');
+            return;
+        }
+        
+        this.printChequesList(notCollectedCheques, 'تقرير الشيكات التي لم يتم جلب أصلها');
+    }
+
+    openPrintFilterModal() {
+        document.getElementById('printFilterModal').style.display = 'block';
+    }
+
+    closePrintFilterModal() {
+        document.getElementById('printFilterModal').style.display = 'none';
+    }
+
+    printOriginalNotCollectedFiltered() {
+        const clientName = document.getElementById('filterClientName').value.trim();
+        const bankName = document.getElementById('filterBankName').value;
+        const dateFrom = document.getElementById('filterDateFrom').value;
+        const dateTo = document.getElementById('filterDateTo').value;
+        
+        let filteredCheques = this.cheques.filter(c => 
+            c.status === 'cashed' && 
+            c.cashMethod === 'تحويل' && 
+            c.originalCollected === 'لا'
+        );
+        
+        // تطبيق فلتر العميل
+        if (clientName) {
+            filteredCheques = filteredCheques.filter(c => 
+                c.clientName.toLowerCase().includes(clientName.toLowerCase())
+            );
+        }
+        
+        // تطبيق فلتر البنك
+        if (bankName) {
+            filteredCheques = filteredCheques.filter(c => c.bankName === bankName);
+        }
+        
+        // تطبيق فلتر التاريخ
+        if (dateFrom) {
+            filteredCheques = filteredCheques.filter(c => c.cashedAt >= dateFrom);
+        }
+        
+        if (dateTo) {
+            filteredCheques = filteredCheques.filter(c => c.cashedAt <= dateTo);
+        }
+        
+        if (filteredCheques.length === 0) {
+            alert('لا توجد شيكات مطابقة للفلاتر المحددة!');
+            return;
+        }
+        
+        let title = 'تقرير الشيكات التي لم يتم جلب أصلها';
+        if (clientName) title += ` - ${clientName}`;
+        if (bankName) title += ` - ${bankName}`;
+        
+        this.printChequesList(filteredCheques, title);
+        this.closePrintFilterModal();
+    }
+
+    printChequesList(cheques, title) {
+        const printWindow = window.open('', '_blank');
+        
+        let html = `
+            <!DOCTYPE html>
+            <html dir="rtl" lang="ar">
+            <head>
+                <meta charset="UTF-8">
+                <title>${title}</title>
+                <style>
+                    body { font-family: 'Tajawal', sans-serif; margin: 20px; direction: rtl; }
+                    h1 { text-align: center; color: #333; margin-bottom: 30px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
+                    th { background-color: #f2f2f2; font-weight: bold; }
+                    .total { font-weight: bold; background-color: #f9f9f9; }
+                    @media print { body { margin: 10px; } }
+                </style>
+            </head>
+            <body>
+                <h1>${title}</h1>
+                <p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>م</th>
+                            <th>رقم الشيك</th>
+                            <th>البنك</th>
+                            <th>اسم العميل</th>
+                            <th>المبلغ</th>
+                            <th>تاريخ الصرف</th>
+                            <th>طريقة الصرف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        let grandTotal = 0;
+        const totalsByCurrency = {};
+        
+        cheques.forEach((cheque, index) => {
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${cheque.chequeNumber}</td>
+                    <td>${cheque.bankName}</td>
+                    <td>${cheque.clientName}</td>
+                    <td>${this.formatNumber(cheque.amount)} ${cheque.currency}</td>
+                    <td>${new Date(cheque.cashedAt).toLocaleDateString('ar-SA')}</td>
+                    <td>${cheque.cashMethod}</td>
+                </tr>
+            `;
+            
+            if (!totalsByCurrency[cheque.currency]) {
+                totalsByCurrency[cheque.currency] = 0;
+            }
+            totalsByCurrency[cheque.currency] += cheque.amount;
+        });
+        
+        html += `
+                    </tbody>
+                    <tfoot>
+                        <tr class="total">
+                            <td colspan="4">الإجمالي</td>
+                            <td colspan="3">
+        `;
+        
+        Object.entries(totalsByCurrency).forEach(([currency, total]) => {
+            html += `${this.formatNumber(total)} ${currency}<br>`;
+        });
+        
+        html += `
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <p>العدد الإجمالي: ${cheques.length} شيك</p>
+            </body>
+            </html>
+        `;
+        
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.print();
     }
 }
 

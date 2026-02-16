@@ -94,6 +94,14 @@
                                 <div class="stat-value" id="cashedCheques">0</div>
                                 <div class="stat-label">شيكات تم صرفها</div>
                             </div>
+                            <div class="stat-card original-collected">
+                                <div class="stat-value" id="originalCollectedCheques">0</div>
+                                <div class="stat-label">تم جلب الأصل</div>
+                            </div>
+                            <div class="stat-card original-not-collected">
+                                <div class="stat-value" id="originalNotCollectedCheques">0</div>
+                                <div class="stat-label">لم يتم جلب الأصل</div>
+                            </div>
                         </div>
                         
                         <!-- إجمالي المبالغ -->
@@ -129,6 +137,8 @@
                             <button type="button" id="printPending" class="btn btn-outline">🖨️ طباعة المستحقة</button>
                             <button type="button" id="printCashed" class="btn btn-outline">🖨️ طباعة المنصرفة</button>
                             <button type="button" id="printAll" class="btn btn-outline">🖨️ طباعة الكل</button>
+                            <button type="button" id="printOriginalNotCollected" class="btn btn-warning">🖨️ طباعة لم يتم جلب الأصل</button>
+                            <button type="button" id="printOriginalNotCollectedFiltered" class="btn btn-info">🖨️ طباعة لم يتم جلب الأصل (فلتر)</button>
                             <button type="button" id="sendWhatsAppOverdueToday" class="btn btn-whatsapp">📱 المتأخر واليوم</button>
                             <button type="button" id="sendWhatsAppTodayOnly" class="btn btn-whatsapp">📱 استحقاق اليوم</button>
                             <button type="button" id="sendWhatsAppFromToday" class="btn btn-whatsapp">📱 المستحق من اليوم</button>
@@ -151,6 +161,10 @@
                 <!-- سيتم عرض التفاصيل هنا -->
             </div>
             <div class="modal-actions">
+                <button type="button" id="editCheque" class="btn btn-primary">تعديل الشيك</button>
+                <button type="button" id="deleteCheque" class="btn btn-danger">حذف الشيك</button>
+                <button type="button" id="toggleChequeStatus" class="btn btn-warning">تفعيل/إلغاء تفعيل</button>
+                <button type="button" id="editOriginalCollected" class="btn btn-info">تعديل جلب الأصل</button>
                 <button type="button" id="cancelCheque" class="btn btn-danger">إلغاء الشيك</button>
                 <button type="button" id="cashCheque" class="btn btn-success">صرف الشيك</button>
                 <button type="button" id="sendWhatsApp" class="btn btn-whatsapp">📱 واتساب</button>
@@ -164,11 +178,132 @@
                     <label for="cashDate">اختر تاريخ الصرف:</label>
                     <input type="date" id="cashDate" name="cashDate">
                 </div>
+                <div class="form-group">
+                    <label for="cashMethod">طريقة الصرف:</label>
+                    <select id="cashMethod" name="cashMethod">
+                        <option value="سحب">سحب نقدي</option>
+                        <option value="تحويل">تحويل بنكي</option>
+                    </select>
+                </div>
+                <div class="form-group" id="originalCollectedGroup" style="display: none;">
+                    <label for="originalCollected">هل تم جلب أصل الشيك؟</label>
+                    <select id="originalCollected" name="originalCollected">
+                        <option value="نعم">نعم، تم جلب الأصل</option>
+                        <option value="لا">لا، لم يتم جلب الأصل</option>
+                    </select>
+                </div>
                 <div class="modal-actions">
                     <button type="button" id="confirmCashDate" class="btn btn-success">تأكيد الصرف</button>
                     <button type="button" id="cancelCashDate" class="btn btn-secondary">إلغاء</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل الشيك -->
+    <div id="editChequeModal" class="modal">
+        <div class="modal-content">
+            <h3>تعديل بيانات الشيك</h3>
+            <form id="editChequeForm" class="cheque-form">
+                <input type="hidden" id="editChequeId">
+                <div class="form-group">
+                    <label for="editChequeNumber">رقم الشيك</label>
+                    <input type="text" id="editChequeNumber" name="chequeNumber" placeholder="أدخل رقم الشيك" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editBankName">البنك</label>
+                    <select id="editBankName" name="bankName" required>
+                        <option value="">اختر البنك</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editClientName">اسم العميل/الشخص</label>
+                    <input type="text" id="editClientName" name="clientName" placeholder="أدخل اسم العميل" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editAmount">المبلغ</label>
+                    <div class="balance-input-group">
+                        <input type="text" id="editAmount" name="amount" placeholder="0.00" inputmode="decimal" required>
+                        <select id="editCurrency" name="currency" class="currency-select">
+                            <option value="جنيه">جنيه</option>
+                            <option value="ريال">ريال</option>
+                            <option value="دولار">دولار</option>
+                            <option value="يورو">يورو</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editDueDate">تاريخ الاستحقاق</label>
+                    <input type="date" id="editDueDate" name="dueDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editNotes">ملاحظات (اختياري)</label>
+                    <textarea id="editNotes" name="notes" placeholder="أي ملاحظات إضافية" rows="3"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                    <button type="button" id="cancelEdit" class="btn btn-secondary">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل جلب الأصل -->
+    <div id="editOriginalCollectedModal" class="modal">
+        <div class="modal-content">
+            <h3>تعديل حالة جلب الأصل</h3>
+            <form id="editOriginalCollectedForm">
+                <input type="hidden" id="editOriginalCollectedChequeId">
+                <div class="form-group">
+                    <label for="newOriginalCollected">هل تم جلب أصل الشيك؟</label>
+                    <select id="newOriginalCollected" name="originalCollected" required>
+                        <option value="">اختر الحالة</option>
+                        <option value="نعم">نعم، تم جلب الأصل</option>
+                        <option value="لا">لا، لم يتم جلب الأصل</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">حفظ التغيير</button>
+                    <button type="button" id="cancelEditOriginalCollected" class="btn btn-secondary">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة فلتر الطباعة -->
+    <div id="printFilterModal" class="modal">
+        <div class="modal-content">
+            <h3>فلتر طباعة الشيكات التي لم يتم جلب أصلها</h3>
+            <form id="printFilterForm">
+                <div class="form-group">
+                    <label for="filterClientName">اسم العميل/الشركة (اختياري)</label>
+                    <input type="text" id="filterClientName" name="clientName" placeholder="أدخل اسم العميل أو اترك فارغاً للكل">
+                </div>
+                <div class="form-group">
+                    <label for="filterBankName">البنك (اختياري)</label>
+                    <select id="filterBankName" name="bankName">
+                        <option value="">الكل</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filterDateFrom">من تاريخ (اختياري)</label>
+                    <input type="date" id="filterDateFrom" name="dateFrom">
+                </div>
+                <div class="form-group">
+                    <label for="filterDateTo">إلى تاريخ (اختياري)</label>
+                    <input type="date" id="filterDateTo" name="dateTo">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">طباعة بالفلتر</button>
+                    <button type="button" id="cancelPrintFilter" class="btn btn-secondary">إلغاء</button>
+                </div>
+            </form>
         </div>
     </div>
 
