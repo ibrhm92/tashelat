@@ -1,21 +1,32 @@
-// bank-balance.js
+class BankBalanceApp {
+    constructor() {
+        this.form = document.getElementById('bank-balance-form');
+        this.loadFormData();  // Load data on initialization
+        this.form.addEventListener('change', () => this.saveFormData());
+    }
 
-// Function to save form data automatically when changed
-function saveData() {
-    const balanceInput = document.getElementById('balance');
-    localStorage.setItem('bankBalance', balanceInput.value);
-}
+    // Method to save form data to localStorage
+    saveFormData() {
+        const formData = new FormData(this.form);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        localStorage.setItem('bankBalanceFormData', JSON.stringify(data));
+    }
 
-// Function to load saved data on page load
-function loadData() {
-    const savedBalance = localStorage.getItem('bankBalance');
-    if (savedBalance) {
-        document.getElementById('balance').value = savedBalance;
+    // Method to load form data from localStorage
+    loadFormData() {
+        const savedData = localStorage.getItem('bankBalanceFormData');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            for (const key in data) {
+                if (data.hasOwnProperty(key) && this.form.elements[key]) {
+                    this.form.elements[key].value = data[key];
+                }
+            }
+        }
     }
 }
 
-// Event listener to save data automatically
-document.getElementById('balance').addEventListener('input', saveData);
-
-// Load data on window load
-window.onload = loadData;
+// Assuming the rest of your existing code follows...
