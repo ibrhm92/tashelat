@@ -109,6 +109,8 @@ class ChequesManagementApp {
         document.getElementById('printAll').addEventListener('click', () => this.printCheques('all'));
         document.getElementById('printOriginalNotCollected').addEventListener('click', () => this.printOriginalNotCollected());
         document.getElementById('printOriginalNotCollectedFiltered').addEventListener('click', () => this.openPrintFilterModal());
+        document.getElementById('exportToExcel').addEventListener('click', () => this.exportToExcel());
+        document.getElementById('importFromExcel').addEventListener('click', () => this.openImportExcelModal());
         document.getElementById('sendWhatsApp').addEventListener('click', () => this.sendWhatsAppSingle());
         document.getElementById('sendWhatsAppOverdueToday').addEventListener('click', () => this.sendWhatsAppFiltered('overdue_today'));
         document.getElementById('sendWhatsAppTodayOnly').addEventListener('click', () => this.sendWhatsAppFiltered('today_only'));
@@ -120,6 +122,13 @@ class ChequesManagementApp {
             this.printOriginalNotCollectedFiltered();
         });
         document.getElementById('cancelPrintFilter').addEventListener('click', () => this.closePrintFilterModal());
+        
+        // مودال استيراد Excel
+        document.getElementById('importExcelForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.importFromExcel();
+        });
+        document.getElementById('cancelImportExcel').addEventListener('click', () => this.closeImportExcelModal());
     }
 
     updateBankSelects() {
@@ -1056,6 +1065,140 @@ class ChequesManagementApp {
         printWindow.document.write(html);
         printWindow.document.close();
         printWindow.print();
+    }
+
+    // دوال Excel للتصدير والاستيراد
+    exportToExcel() {
+        if (this.cheques.length === 0) {
+            alert('لا توجد بيانات للتصدير!');
+            return;
+        }
+
+        // تجهيز البيانات للتصدير
+        const exportData = this.cheques.map(cheque => ({
+            'رقم الشيك': cheque.chequeNumber,
+            'البنك': cheque.bankName,
+            'اسم العميل': cheque.clientName,
+            'المبلغ': cheque.amount,
+            'العملة': cheque.currency,
+            'تاريخ الاستحقاق': new Date(cheque.dueDate).toLocaleDateString('ar-SA'),
+            'الحالة': this.getChequeStatus(cheque),
+            'ملاحظات': cheque.notes || '',
+            'تاريخ الإضافة': new Date(cheque.createdAt).toLocaleDateString('ar-SA'),
+            'تاريخ الصرف': cheque.cashedAt ? new Date(cheque.cashedAt).toLocaleDateString('ar-SA') : '',
+            'طريقة الصرف': cheque.cashMethod || '',
+            'جلب الأصل': cheque.originalCollected || '',
+            'آخر تحديث': cheque.updatedAt ? new Date(cheque.updatedAt).toLocaleDateString('ar-SA') : ''
+        }));
+
+        // إنشاء مصنف Excel
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'الشيكات');
+
+        // تنزيل الملف
+        const fileName = `الشيكات_${new Date().toLocaleDateString('ar-SA').replace(/\//g, '-')}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+    }
+
+    openImportExcelModal() {
+        document.getElementById('importExcelModal').style.display = 'block';
+    }
+
+    closeImportExcelModal() {
+        document.getElementById('importExcelModal').style.display = 'none';
+        document.getElementById('importExcelForm').reset();
+    }
+
+    importFromExcel() {
+        const fileInput = document.getElementById('excelFile');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('الرجاء اختيار ملف Excel!');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                if (jsonData.length < 2) {
+                    alert('الملف فارغ أو لا يحتوي على بيانات صالحة!');
+                    return;
+                }
+
+                // تخطي رأس الجدول ومعالجة البيانات
+                const importedCheques = [];
+                for (let i = 1; i < jsonData.length; i++) {
+                    const row = jsonData[i];
+                    if (row[0] && row[1] && row[2] && row[3]) { // التحقق من الحقول الأساسية
+                        const cheque = {
+                            id: Date.now() + i, // ID فريد
+                            chequeNumber: row[0].toString(),
+                            bankName: row[1].toString(),
+                            clientName: row[2].toString(),
+                            amount: parseFloat(row[3]) || 0,
+                            currency: row[4] ? row[4].toString() : 'جنيه',
+                            dueDate: this.parseExcelDate(row[5]) || new Date().toISOString().split('T')[0],
+                            notes: row[6] ? row[6].toString() : '',
+                            status: 'pending',
+                            createdAt: new Date().toISOString(),
+                            cashedAt: null
+                        };
+                        importedCheques.push(cheque);
+                    }
+                }
+
+                if (importedCheques.length === 0) {
+                    alert('لم يتم العثور على بيانات صالحة في الملف!');
+                    return;
+                }
+
+                // دمج البيانات المستوردة مع البيانات الحالية
+                this.cheques = [...this.cheques, ...importedCheques];
+                this.saveCheques();
+                this.closeImportExcelModal();
+                this.renderChequesList();
+                this.updateStatistics();
+                this.updateTotals();
+
+                alert(`تم استيراد ${importedCheques.length} شيك بنجاح!`);
+                
+            } catch (error) {
+                console.error('Error importing Excel:', error);
+                alert('حدث خطأ أثناء استيراد الملف! الرجاء التحقق من تنسيق الملف.');
+            }
+        };
+
+        reader.onerror = () => {
+            alert('فشل قراءة الملف!');
+        };
+
+        reader.readAsArrayBuffer(file);
+    }
+
+    parseExcelDate(dateValue) {
+        if (!dateValue) return null;
+        
+        // التعامل مع تواريخ Excel (أرقام) والتواريخ النصية
+        if (typeof dateValue === 'number') {
+            // Excel stores dates as number of days since 1900-01-01
+            const date = new Date((dateValue - 25569) * 86400 * 1000);
+            return date.toISOString().split('T')[0];
+        } else if (typeof dateValue === 'string') {
+            // محاولة تحليل التاريخ النصي
+            const date = new Date(dateValue);
+            if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0];
+            }
+        }
+        
+        return null;
     }
 }
 

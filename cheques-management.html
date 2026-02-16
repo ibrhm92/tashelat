@@ -6,6 +6,7 @@
     <title>تسجيلات الشيكات - تسهيلات</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -139,6 +140,8 @@
                             <button type="button" id="printAll" class="btn btn-outline">🖨️ طباعة الكل</button>
                             <button type="button" id="printOriginalNotCollected" class="btn btn-warning">🖨️ طباعة لم يتم جلب الأصل</button>
                             <button type="button" id="printOriginalNotCollectedFiltered" class="btn btn-info">🖨️ طباعة لم يتم جلب الأصل (فلتر)</button>
+                            <button type="button" id="exportToExcel" class="btn btn-success">📊 تصدير لـ Excel</button>
+                            <button type="button" id="importFromExcel" class="btn btn-primary">📥 استيراد من Excel</button>
                             <button type="button" id="sendWhatsAppOverdueToday" class="btn btn-whatsapp">📱 المتأخر واليوم</button>
                             <button type="button" id="sendWhatsAppTodayOnly" class="btn btn-whatsapp">📱 استحقاق اليوم</button>
                             <button type="button" id="sendWhatsAppFromToday" class="btn btn-whatsapp">📱 المستحق من اليوم</button>
@@ -302,6 +305,24 @@
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">طباعة بالفلتر</button>
                     <button type="button" id="cancelPrintFilter" class="btn btn-secondary">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة استيراد Excel -->
+    <div id="importExcelModal" class="modal">
+        <div class="modal-content">
+            <h3>استيراد البيانات من ملف Excel</h3>
+            <form id="importExcelForm">
+                <div class="form-group">
+                    <label for="excelFile">اختر ملف Excel (.xlsx أو .xls)</label>
+                    <input type="file" id="excelFile" name="excelFile" accept=".xlsx,.xls" required>
+                    <small>ملاحظة: يجب أن يحتوي الملف على الأعمدة التالية بالترتيب: رقم الشيك، البنك، اسم العميل، المبلغ، العملة، تاريخ الاستحقاق، ملاحظات</small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">استيراد البيانات</button>
+                    <button type="button" id="cancelImportExcel" class="btn btn-secondary">إلغاء</button>
                 </div>
             </form>
         </div>
