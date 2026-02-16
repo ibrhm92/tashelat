@@ -1,17 +1,21 @@
-// Function to save form data to localStorage
-function saveFormData(formData) {
-    localStorage.setItem('formData', JSON.stringify(formData));
+// bank-balance.js
+
+// Function to save form data automatically when changed
+function saveData() {
+    const balanceInput = document.getElementById('balance');
+    localStorage.setItem('bankBalance', balanceInput.value);
 }
 
-// Function to load form data from localStorage
-function loadFormData() {
-    const formData = localStorage.getItem('formData');
-    return formData ? JSON.parse(formData) : null;
+// Function to load saved data on page load
+function loadData() {
+    const savedBalance = localStorage.getItem('bankBalance');
+    if (savedBalance) {
+        document.getElementById('balance').value = savedBalance;
+    }
 }
 
-// Example usage
-const formData = { name: 'John Doe', email: 'john@example.com' };
-saveFormData(formData);
+// Event listener to save data automatically
+document.getElementById('balance').addEventListener('input', saveData);
 
-const loadedData = loadFormData();
-console.log(loadedData); // Should log the saved form data
+// Load data on window load
+window.onload = loadData;
